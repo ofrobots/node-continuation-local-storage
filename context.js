@@ -2,6 +2,7 @@
 
 var assert      = require('assert');
 var wrapEmitter = require('emitter-listener');
+var contextIsEverything = require('context-is-everything');
 
 /*
  *
@@ -172,6 +173,8 @@ function create(name) {
   });
 
   process.namespaces[name] = namespace;
+  namespace.boundBind = namespace.bind.bind(namespace);
+  contextIsEverything.register(namespace.bind);
   return namespace;
 }
 
@@ -182,6 +185,8 @@ function destroy(name) {
   assert.ok(namespace.id, "don't assign to process.namespaces directly!");
 
   process.removeAsyncListener(namespace.id);
+
+  contextIsEverything.unregister(namespace.boundBind);
   process.namespaces[name] = null;
 }
 
